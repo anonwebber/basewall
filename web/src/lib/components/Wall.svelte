@@ -147,45 +147,89 @@
       }
     }
 
-    // ----- Corner brand image overlays (loaded lazily — fall back to tint if PNG missing) -----
-    const cornerOverlay = new PIXI.Container();
-    cornerOverlay.eventMode = 'none';
-    viewport.addChild(cornerOverlay);
-
-    const CORNER_SPAN = 10 * BRICK_SIZE;
+    // ----- Corner brand images: slice each into 100 tile-textures and apply to brick sprites -----
+    // Same pipeline that powers user X-banner / cluster uploads.
     const cornerSlots = [
-      { url: '/corners/eth.png',  x: 0,                            y: 0 },
-      { url: '/corners/x.png',    x: (GRID_W - 10) * BRICK_SIZE,   y: 0 },
-      { url: '/corners/base.png', x: 0,                            y: (GRID_H - 10) * BRICK_SIZE },
-      { url: '/corners/uni.png',  x: (GRID_W - 10) * BRICK_SIZE,   y: (GRID_H - 10) * BRICK_SIZE }
+      { url: '/corners/eth.png',  cornerX: 0,            cornerY: 0 },
+      { url: '/corners/x.png',    cornerX: GRID_W - 10,  cornerY: 0 },
+      { url: '/corners/base.png', cornerX: 0,            cornerY: GRID_H - 10 },
+      { url: '/corners/uni.png',  cornerX: GRID_W - 10,  cornerY: GRID_H - 10 }
     ];
 
-    Promise.all(
-      cornerSlots.map((c) =>
-        PIXI.Assets.load(c.url)
-          .then((tex: any) => {
-            if (destroyed || !tex) return;
-            const sprite = new PIXI.Sprite(tex);
-            sprite.x = c.x;
-            sprite.y = c.y;
-            sprite.width = CORNER_SPAN;
-            sprite.height = CORNER_SPAN;
-            sprite.eventMode = 'none';
+    // Slice an image into clusterW × clusterH tile textures and apply each to a brick sprite.
+    // Generic — also used for user uploads on arbitrary clusters.
+    async function applyImageToCluster(url: string, cornerX: number, cornerY: number, clusterW = 10, clusterH = 10) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      try {
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = reject;
+          img.src = url;
+        });
+      } catch {
+        return; // file missing or load failed — solid tint stays
+      }
+      if (destroyed) return;
+
+      // Render image to canvas at 16px per cell (matches BRICK_SIZE)
+      const cellPx = 32;                  // canvas-pixel resolution per brick (2x for crispness at zoom)
+      const cw = clusterW * cellPx;
+      const ch = clusterH * cellPx;
+      const canvas = document.createElement('canvas');
+      canvas.width = cw;
+      canvas.height = ch;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Dark warm-black background — so transparent areas of the logo don't punch through
+      ctx.fillStyle = '#1a1410';
+      ctx.fillRect(0, 0, cw, ch);
+
+      // Cover-fit the image to the canvas (preserve aspect, crop overflow)
+      const ir = img.width / img.height;
+      const cr = cw / ch;
+      let dw = cw, dh = ch, dx = 0, dy = 0;
+      if (ir > cr) {
+        dw = ch * ir;
+        dx = (cw - dw) / 2;
+      } else {
+        dh = cw / ir;
+        dy = (ch - dh) / 2;
+      }
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, dx, dy, dw, dh);
+
+      // Build one TextureSource from the canvas, then mint 100 sub-frame Textures.
+      const fullTex = PIXI.Texture.from(canvas);
+      const source = fullTex.source;
+
+      for (let dy2 = 0; dy2 < clusterH; dy2++) {
+        for (let dx2 = 0; dx2 < clusterW; dx2++) {
+          const subTex = new PIXI.Texture({
+            source,
+            frame: new PIXI.Rectangle(dx2 * cellPx, dy2 * cellPx, cellPx, cellPx)
+          });
+          const brickIdx = (cornerY + dy2) * GRID_W + (cornerX + dx2);
+          const sprite = brickSprites[brickIdx];
+          if (sprite) {
+            sprite.texture = subTex;
+            sprite.tint = 0xffffff;        // remove tint so true colors show
+            // soft fade-in by toggling alpha briefly
             sprite.alpha = 0;
-            cornerOverlay.addChild(sprite);
-            // fade-in
-            let t = 0;
-            const fadeIn = () => {
-              t += 0.04;
-              if (destroyed || !sprite || sprite.destroyed) return;
-              sprite.alpha = Math.min(1, t);
-              if (t < 1) requestAnimationFrame(fadeIn);
-            };
-            fadeIn();
-          })
-          .catch(() => {/* PNG not present — solid tint stays */})
-      )
-    );
+            requestAnimationFrame(() => {
+              if (sprite && !sprite.destroyed) {
+                sprite.alpha = 1;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    // Fire all 4 in parallel — each falls back to its existing tint if file missing
+    Promise.all(cornerSlots.map((c) => applyImageToCluster(c.url, c.cornerX, c.cornerY)));
 
     // ----- Center reserve outline (cream frame marks the dev reserve, no fill tint) -----
     const reserveFrame = new PIXI.Graphics();

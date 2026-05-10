@@ -1,6 +1,8 @@
 # Corner brand artwork
 
-Drop 4 PNGs here at exactly **160 × 160 px** (10 brick cells × 16 px each):
+Drop **any normal image** here — the wall slices it into 100 sub-tiles (10×10 brick grid) and applies one tile to each brick of that corner.
+
+This is the SAME pipeline that handles user-uploaded X banners (30×10 clusters) and any other multi-brick cluster — the corners just happen to be 10×10.
 
 | File | Corner | Brand |
 |------|--------|-------|
@@ -9,11 +11,11 @@ Drop 4 PNGs here at exactly **160 × 160 px** (10 brick cells × 16 px each):
 | `base.png` | bottom-left  | Base chain |
 | `uni.png`  | bottom-right | Uniswap |
 
-The Wall renderer auto-loads each on mount via Pixi's `Assets.load`. If any file is missing, the solid brand tint stays visible underneath. Adding a new file = appears next page refresh, with a fade-in transition.
+## How the image renders
 
-## Style guide
+- Any size, any aspect ratio works
+- Non-square images are **cover-fit** to a square (center-cropped)
+- Transparent areas (PNG alpha) fall onto a dark warm-black `#1a1410` background — so logos with transparency show on dark, not on neon corner tints
+- The image fades in on load with no rebuild needed; just refresh the page
 
-- 160 × 160 PNG, transparent background or matching dark base (`#1a1410`)
-- Logo occupies a clear 10 × 10 cell grid (each cell = 16 px), pixel-aligned to the brick mortar
-- Crisp pixel edges, no anti-aliasing across cells
-- One brand-recognizable silhouette per corner — readable at full zoom-out (one cell ≈ 1px)
+Missing files = the solid corner tints stay visible (no broken image).
