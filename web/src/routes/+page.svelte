@@ -65,7 +65,7 @@
           </div>
           <button
             onclick={() => (selectedBrick = null)}
-            class="font-mono text-2xs text-ink-400 hover:text-accent-gold transition"
+            class="font-mono text-2xs text-ink-400 hover:text-accent-cream transition"
             aria-label="close"
           >
             ✕ esc
@@ -81,12 +81,12 @@
           <div class="px-3 py-2 bg-ink-900/60 rounded-md">
             <div class="text-2xs text-ink-500 uppercase tracking-wider mb-0.5">position</div>
             <div class="text-ink-100">
-              ({(selectedBrick - 1) % 100},{Math.floor((selectedBrick - 1) / 100)})
+              ({(selectedBrick - 1) % 125},{Math.floor((selectedBrick - 1) / 125)})
             </div>
           </div>
           <div class="px-3 py-2 bg-ink-900/60 rounded-md">
             <div class="text-2xs text-ink-500 uppercase tracking-wider mb-0.5">price</div>
-            <div class="text-accent-gold">0.001 ETH</div>
+            <div class="text-accent-cream">0.001 ETH</div>
           </div>
         </div>
 

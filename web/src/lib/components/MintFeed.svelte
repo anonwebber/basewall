@@ -25,7 +25,7 @@
         <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md
                     bg-ink-900/60 hover:bg-ink-800/60 transition-colors animate-fade-up">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="font-mono text-2xs text-accent-gold shrink-0">#{mint.id}</span>
+            <span class="font-mono text-2xs text-accent-cream shrink-0">#{mint.id}</span>
             <span class="font-mono text-2xs text-ink-500 shrink-0">{brickCoords(mint.id)}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0">

@@ -4,73 +4,82 @@
 
   let { dismiss }: { dismiss: () => void } = $props();
 
-  const fillPct = $derived(((wall.publicMinted / wall.publicSupply) * 100).toFixed(1));
+  const fillPct = $derived(((wall.publicMinted / wall.publicSupply) * 100).toFixed(2));
 </script>
 
 <div class="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
   <!-- Backdrop fade -->
-  <div class="absolute inset-0 bg-gradient-radial from-ink-950/0 via-ink-950/40 to-ink-950/85 pointer-events-auto"
-       role="presentation"
-       onclick={dismiss}
-       onkeydown={(e) => e.key === 'Escape' && dismiss()}></div>
+  <div
+    class="absolute inset-0 hero-backdrop pointer-events-auto"
+    role="presentation"
+    onclick={dismiss}
+    onkeydown={(e) => e.key === 'Escape' && dismiss()}
+  ></div>
 
   <!-- Content -->
-  <div class="relative pointer-events-auto max-w-2xl px-8 text-center animate-fade-up">
-    <div class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full bg-ink-800/80 border border-accent-gold/20">
-      <span class="w-1.5 h-1.5 rounded-full bg-accent-gold animate-pulse"></span>
-      <span class="font-mono text-2xs tracking-widest uppercase text-accent-gold">live on base</span>
+  <div class="relative pointer-events-auto max-w-3xl px-8 text-center animate-fade-up">
+    <!-- Live pill -->
+    <div class="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full
+                bg-ink-900/80 border border-accent-base/30 backdrop-blur-sm">
+      <span class="relative flex items-center">
+        <span class="absolute w-2 h-2 rounded-full bg-accent-base animate-ping opacity-75"></span>
+        <span class="relative w-1.5 h-1.5 rounded-full bg-accent-base-glow"></span>
+      </span>
+      <span class="font-mono text-2xs tracking-widest uppercase text-accent-base-glow">live on base</span>
     </div>
 
-    <h1 class="font-display text-5xl sm:text-7xl font-bold tracking-tight leading-[0.95] mb-5">
-      <span class="text-ink-50">10,000 bricks.</span><br />
-      <span class="text-accent-gold">one wall.</span>
-      <span class="text-ink-300">forever.</span>
+    <!-- Headline -->
+    <h1 class="font-display font-bold tracking-[-0.02em] leading-[0.92] mb-6
+               text-[clamp(2.8rem,8vw,6.5rem)]">
+      <span class="block text-ink-50">10,000 bricks.</span>
+      <span class="block text-accent-cream">one wall.</span>
+      <span class="block text-ink-300/80 italic font-normal">forever.</span>
     </h1>
 
-    <p class="font-sans text-base sm:text-lg text-ink-200 max-w-xl mx-auto mb-8 leading-relaxed">
-      Mint a brick for <span class="text-accent-gold font-medium">{eth(0.001)}</span>.
+    <!-- Sub -->
+    <p class="font-sans text-lg sm:text-xl text-ink-200 max-w-xl mx-auto mb-10 leading-relaxed">
+      Mint a brick for <span class="text-accent-cream font-semibold">{eth(0.001)}</span>.
       Attach any image, text, or link.
       Earn from every <span class="font-mono text-ink-50">$WALL</span> swap — forever.
     </p>
 
-    <div class="flex items-center justify-center gap-3 mb-10">
-      <button
-        class="btn-primary px-6 py-3 text-base"
-        onclick={dismiss}
-      >
+    <!-- CTAs -->
+    <div class="flex items-center justify-center gap-3 mb-12">
+      <button class="btn-primary px-7 py-3.5 text-base font-semibold" onclick={dismiss}>
         explore the wall →
       </button>
-      <button class="btn-ghost px-5 py-2.5 text-sm">
+      <button class="btn-connect px-6 py-3 text-sm">
         mint now
       </button>
     </div>
 
     <!-- Stats strip -->
-    <div class="flex items-center justify-center gap-6 sm:gap-10 font-mono text-2xs tracking-widest uppercase text-ink-400">
-      <div class="flex flex-col items-center gap-0.5">
-        <span class="text-ink-50 text-lg font-bold normal-case tracking-tight">{compact(wall.publicMinted)}</span>
+    <div class="flex items-center justify-center gap-8 sm:gap-12 font-mono text-2xs tracking-widest uppercase text-ink-400">
+      <div class="flex flex-col items-center gap-1">
+        <span class="text-ink-50 text-xl font-bold normal-case tracking-tight">{compact(wall.publicMinted)}</span>
         <span>minted</span>
       </div>
-      <div class="w-px h-8 bg-ink-700"></div>
-      <div class="flex flex-col items-center gap-0.5">
-        <span class="text-accent-gold text-lg font-bold normal-case tracking-tight">{fillPct}%</span>
+      <div class="w-px h-9 bg-gradient-to-b from-transparent via-ink-600 to-transparent"></div>
+      <div class="flex flex-col items-center gap-1">
+        <span class="text-accent-cream text-xl font-bold normal-case tracking-tight">{fillPct}%</span>
         <span>filled</span>
       </div>
-      <div class="w-px h-8 bg-ink-700"></div>
-      <div class="flex flex-col items-center gap-0.5">
-        <span class="text-accent-base text-lg font-bold normal-case tracking-tight">{compact(wall.publicSupply - wall.publicMinted)}</span>
+      <div class="w-px h-9 bg-gradient-to-b from-transparent via-ink-600 to-transparent"></div>
+      <div class="flex flex-col items-center gap-1">
+        <span class="text-accent-base-glow text-xl font-bold normal-case tracking-tight">{compact(wall.publicSupply - wall.publicMinted)}</span>
         <span>remaining</span>
       </div>
     </div>
 
-    <p class="mt-10 font-mono text-2xs tracking-wider text-ink-500">
+    <p class="mt-12 font-mono text-2xs tracking-wider text-ink-500/80">
       click anywhere to dismiss · esc
     </p>
   </div>
 </div>
 
 <style>
-  .bg-gradient-radial {
-    background: radial-gradient(ellipse at center, transparent 0%, rgba(10, 8, 5, 0.45) 50%, rgba(10, 8, 5, 0.92) 100%);
+  .hero-backdrop {
+    background:
+      radial-gradient(ellipse 900px 700px at center, transparent 0%, rgba(10, 8, 5, 0.55) 50%, rgba(10, 8, 5, 0.94) 100%);
   }
 </style>

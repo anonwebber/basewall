@@ -17,7 +17,7 @@
         <div class="flex flex-col leading-tight">
           <span class="font-mono text-2xs tracking-widest uppercase text-ink-400">minted</span>
           <span class="font-mono text-sm text-ink-50">
-            <span class="text-accent-gold">{compact(wall.publicMinted)}</span>
+            <span class="text-accent-cream">{compact(wall.publicMinted)}</span>
             <span class="text-ink-400"> / {compact(wall.publicSupply)}</span>
             <span class="text-ink-500 text-2xs ml-1">{fillPercent}%</span>
           </span>
@@ -35,8 +35,8 @@
       {#if wall.wallet.connected}
         <button
           class="btn-ghost"
-          class:!border-accent-gold={wall.highlightOwned}
-          class:!text-accent-gold={wall.highlightOwned}
+          class:!border-accent-cream={wall.highlightOwned}
+          class:!text-accent-cream={wall.highlightOwned}
           onclick={() => wall.toggleHighlight()}
           aria-pressed={wall.highlightOwned}
         >
@@ -47,7 +47,7 @@
           <span class="w-1.5 h-1.5 rounded-full bg-accent-mint"></span>
           <span class="text-ink-100">{shortAddress(wall.wallet.address ?? '')}</span>
           <span class="text-ink-400">·</span>
-          <span class="text-accent-gold">{wall.wallet.ownedBrickIds.length}</span>
+          <span class="text-accent-cream">{wall.wallet.ownedBrickIds.length}</span>
         </div>
       {:else}
         <button

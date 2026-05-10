@@ -7,7 +7,7 @@
 
 :root {
   color-scheme: dark;
-  --grid-line: rgba(255, 176, 32, 0.04);
+  --grid-line: rgba(245, 239, 230, 0.025);
   --noise-opacity: 0.018;
 }
 
@@ -24,10 +24,10 @@ html, body {
 }
 
 body {
-  /* Subtle warm gradient + grid + noise */
+  /* Subtle Base-blue glow on top + cream wash bottom */
   background:
-    radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(0, 82, 255, 0.08), transparent 60%),
-    radial-gradient(ellipse 800px 600px at 100% 100%, rgba(255, 176, 32, 0.05), transparent 60%),
+    radial-gradient(ellipse 1400px 900px at 50% -10%, rgba(0, 82, 255, 0.12), transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 100%, rgba(245, 239, 230, 0.03), transparent 60%),
     linear-gradient(180deg, #0a0805 0%, #0d0a06 100%);
 }
 
@@ -69,14 +69,14 @@ canvas {
 }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 176, 32, 0.15);
+  background: rgba(245, 239, 230, 0.12);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 176, 32, 0.3); }
+::-webkit-scrollbar-thumb:hover { background: rgba(245, 239, 230, 0.25); }
 
 /* Selection */
 ::selection {
-  background: rgba(255, 176, 32, 0.3);
+  background: rgba(0, 82, 255, 0.45);
   color: #f5efe6;
 }
 
@@ -97,16 +97,16 @@ canvas {
 
   .btn-primary {
     @apply px-4 py-2 font-mono text-sm font-medium tracking-wide
-           bg-accent-gold text-ink-950 rounded-md
-           hover:bg-accent-gold/90 active:scale-[0.98]
+           bg-ink-50 text-ink-950 rounded-md
+           hover:bg-white active:scale-[0.98]
            transition-all duration-150
-           shadow-glow-gold;
+           shadow-glow-cream;
   }
 
   .btn-ghost {
     @apply px-3 py-1.5 font-mono text-xs tracking-wide text-ink-200
-           border border-ink-600 hover:border-accent-gold/40
-           hover:text-accent-gold hover:bg-accent-gold/5
+           border border-ink-600 hover:border-accent-base-glow/50
+           hover:text-accent-base-glow hover:bg-accent-base/10
            rounded-md transition-all duration-150;
   }
 
@@ -114,7 +114,8 @@ canvas {
     @apply px-4 py-2 font-mono text-sm font-medium tracking-wide
            bg-accent-base text-white rounded-md
            hover:bg-accent-base-glow active:scale-[0.98]
-           transition-all duration-150;
+           transition-all duration-150
+           shadow-glow-base;
   }
 
   .pill {

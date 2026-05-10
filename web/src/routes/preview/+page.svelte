@@ -83,13 +83,13 @@
 
 <main class="min-h-screen px-6 sm:px-10 py-12">
   <div class="max-w-5xl mx-auto">
-    <a href="/" class="font-mono text-2xs tracking-wider text-ink-400 hover:text-accent-gold">← back to wall</a>
+    <a href="/" class="font-mono text-2xs tracking-wider text-ink-400 hover:text-accent-cream">← back to wall</a>
 
     <header class="mt-6 mb-12">
       <h1 class="font-display text-5xl font-bold text-ink-50 mb-3">layout preview</h1>
       <p class="text-ink-300 max-w-2xl text-lg">
-        Four candidate wall ratios. Each schematic shows: 4 corner reserves (tinted), center dev reserve (gold-brown),
-        and one example X-banner cluster (gold outline) to scale.
+        Four candidate wall ratios. Each schematic shows: 4 corner reserves (tinted), center dev reserve (cream outline),
+        and one example X-banner cluster (cream outline) to scale.
       </p>
     </header>
 
@@ -101,7 +101,7 @@
               <div class="font-mono text-2xs tracking-widest uppercase text-ink-400 mb-1">option {i + 1}</div>
               <h2 class="font-display text-3xl font-bold">
                 <span class="text-ink-50">{l.name}</span>
-                <span class="text-accent-gold font-normal text-2xl ml-2">{l.ratio}</span>
+                <span class="text-accent-cream font-normal text-2xl ml-2">{l.ratio}</span>
               </h2>
               <p class="font-mono text-xs text-ink-300 mt-1">{l.vibe}</p>
             </div>
@@ -141,8 +141,10 @@
                 y={(l.h - l.centerSize.h) / 2}
                 width={l.centerSize.w}
                 height={l.centerSize.h}
-                fill="#6b4a2e"
-                opacity="0.9"
+                fill="none"
+                stroke="#f5efe6"
+                stroke-width="0.5"
+                stroke-opacity="0.6"
               />
 
               <!-- Example X-banner cluster (30×10) -->
@@ -152,7 +154,7 @@
                 width={BANNER_W}
                 height={BANNER_H}
                 fill="none"
-                stroke="#ffb020"
+                stroke="#f5efe6"
                 stroke-width="0.4"
                 stroke-dasharray="0.8 0.8"
               />
@@ -161,14 +163,14 @@
                 y={l.bannerExample.y + BANNER_H / 2 + 1.5}
                 font-family="JetBrains Mono, monospace"
                 font-size="2.4"
-                fill="#ffb020"
+                fill="#f5efe6"
                 text-anchor="middle"
               >
                 example X banner
               </text>
 
               <!-- Outer frame -->
-              <rect width={l.w} height={l.h} fill="none" stroke="#ffb020" stroke-width="0.3" stroke-opacity="0.4" />
+              <rect width={l.w} height={l.h} fill="none" stroke="#f5efe6" stroke-width="0.3" stroke-opacity="0.4" />
             </svg>
 
             <!-- Corner labels -->
@@ -185,7 +187,7 @@
 
     <div class="mt-10 glass rounded-xl p-5 shadow-panel">
       <h3 class="font-display text-lg font-bold text-ink-50 mb-2">how to pick</h3>
-      <ul class="space-y-1.5 text-sm text-ink-200 list-disc list-inside marker:text-accent-gold">
+      <ul class="space-y-1.5 text-sm text-ink-200 list-disc list-inside marker:text-accent-cream">
         <li><strong class="text-ink-50">200×50 (4:1)</strong> — boldest billboard. The "I built a wall" energy. Wall is short and wide; tons of vertical screen space for hero/header/footer.</li>
         <li><strong class="text-ink-50">175×57 (3:1)</strong> — exact X-banner ratio. The whole wall IS a giant X banner. Banner clusters tile naturally.</li>
         <li><strong class="text-ink-50">150×66 (2.27:1)</strong> — middle ground. Rectangular but not extreme. Easier to render mobile-friendly.</li>

@@ -34,7 +34,7 @@
     </button>
     {#if wall.wallet.connected && wall.wallet.ownedBrickIds.length > 0}
       <button
-        class="zoom-btn text-accent-gold"
+        class="zoom-btn text-accent-cream"
         aria-label="fly to my bricks"
         onclick={() => wall.flyToMine()}
         title="fly to my bricks"
@@ -65,7 +65,7 @@
   }
   .zoom-btn:hover {
     background: theme('colors.ink.700' / 60%);
-    color: theme('colors.accent.gold');
+    color: theme('colors.accent.cream');
   }
   .zoom-btn:active {
     transform: scale(0.95);

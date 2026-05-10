@@ -14,15 +14,15 @@
   >
     <!-- Row 1: 4 bricks staggered offset -->
     <rect x="1" y="6" width="7" height="8" rx="0.6" fill="#0052ff" />
-    <rect x="9" y="6" width="7" height="8" rx="0.6" fill="#ffb020" />
-    <rect x="17" y="6" width="7" height="8" rx="0.6" fill="#a0552d" />
-    <rect x="25" y="6" width="6" height="8" rx="0.6" fill="#ffb020" />
+    <rect x="9" y="6" width="7" height="8" rx="0.6" fill="#f5efe6" />
+    <rect x="17" y="6" width="7" height="8" rx="0.6" fill="#4a82ff" />
+    <rect x="25" y="6" width="6" height="8" rx="0.6" fill="#f5efe6" />
 
     <!-- Row 2: 4 bricks offset -->
-    <rect x="-3" y="16" width="7" height="8" rx="0.6" fill="#a0552d" />
-    <rect x="5" y="16" width="7" height="8" rx="0.6" fill="#ffb020" />
+    <rect x="-3" y="16" width="7" height="8" rx="0.6" fill="#4a82ff" />
+    <rect x="5" y="16" width="7" height="8" rx="0.6" fill="#f5efe6" />
     <rect x="13" y="16" width="7" height="8" rx="0.6" fill="#0052ff" />
-    <rect x="21" y="16" width="7" height="8" rx="0.6" fill="#a0552d" />
+    <rect x="21" y="16" width="7" height="8" rx="0.6" fill="#4a82ff" />
     <rect x="29" y="16" width="6" height="8" rx="0.6" fill="#0052ff" />
 
     <!-- Subtle inner highlight -->
@@ -36,7 +36,7 @@
   </svg>
 
   <span class="font-display font-bold text-base tracking-tight text-ink-50">
-    basewall<span class="text-accent-gold">.fun</span>
+    basewall<span class="text-accent-cream">.fun</span>
   </span>
 </div>
 

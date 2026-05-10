@@ -46,14 +46,14 @@
           <rect x={GRID_W - 10} y="0" width="10" height="10" fill="#e0e0e0" />
           <rect x="0" y={GRID_H - 10} width="10" height="10" fill="#0052ff" />
           <rect x={GRID_W - 10} y={GRID_H - 10} width="10" height="10" fill="#ff007a" />
-          <!-- Center reserve 25×20 at (50,30) -->
-          <rect x="50" y="30" width="25" height="20" fill="#6b4a2e" />
+          <!-- Center reserve 25×20 at (50,30) — outline only, no fill, matches Wall.svelte -->
+          <rect x="50" y="30" width="25" height="20" fill="none" stroke="#f5efe6" stroke-width="0.4" stroke-opacity="0.5" />
         </svg>
 
         <!-- Camera viewport rect indicator -->
         <div
-          class="absolute border border-accent-gold/90 bg-accent-gold/10 pointer-events-none"
-          style="left: {r.x}px; top: {r.y}px; width: {r.w}px; height: {r.h}px; box-shadow: 0 0 6px rgba(255,176,32,0.3);"
+          class="absolute border border-accent-cream/90 bg-accent-cream/10 pointer-events-none"
+          style="left: {r.x}px; top: {r.y}px; width: {r.w}px; height: {r.h}px; box-shadow: 0 0 6px rgba(245,239,230,0.3);"
         ></div>
       </div>
     </div>

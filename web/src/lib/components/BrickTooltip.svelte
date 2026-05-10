@@ -8,15 +8,15 @@
   function zoneLabel(id: number | null) {
     if (!id) return null;
     const idx = id - 1;
-    const bx = idx % 100;
-    const by = Math.floor(idx / 100);
+    const bx = idx % 125;
+    const by = Math.floor(idx / 125);
     const zone = wall.getZone(bx, by);
     switch (zone) {
       case 'corner-eth': return { label: 'ETHEREUM CORNER', tone: 'text-accent-base' };
       case 'corner-x': return { label: 'X CORNER', tone: 'text-ink-50' };
       case 'corner-base': return { label: 'BASE CORNER', tone: 'text-accent-base' };
-      case 'corner-uni': return { label: 'UNISWAP CORNER', tone: 'text-accent-gold' };
-      case 'center-dev': return { label: 'PREMIUM RESERVE', tone: 'text-accent-gold' };
+      case 'corner-uni': return { label: 'UNISWAP CORNER', tone: 'text-accent-cream' };
+      case 'center-dev': return { label: 'PREMIUM RESERVE', tone: 'text-accent-cream' };
       default: return { label: 'PUBLIC', tone: 'text-ink-300' };
     }
   }

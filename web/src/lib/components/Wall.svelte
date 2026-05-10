@@ -18,6 +18,7 @@
   let destroyed = false;
   let resizeHandler: (() => void) | null = null;
   let initialFitScale = 1;
+  let shimmerInterval: ReturnType<typeof setInterval> | null = null;
 
   // Pointer position for tooltip (in DOM coords)
   let pointerX = $state(0);
@@ -31,16 +32,17 @@
   const TOTAL_W = GRID_W * BRICK_SIZE;
   const TOTAL_H = GRID_H * BRICK_SIZE;
 
-  // Zone tints (warm dark palette)
+  // Zone tints (warm dark base + Base blue + cream — NO orange/gold)
   const TINT_EMPTY = 0x1f1813;
-  const TINT_EMPTY_ALT = 0x27201a;     // a bit more contrast for organic checker
+  const TINT_EMPTY_ALT = 0x27201a;     // checker variation
   const TINT_CORNER_ETH = 0x4a82ff;    // Ethereum-ish blue
   const TINT_CORNER_X = 0xe0e0e0;      // X white
   const TINT_CORNER_BASE = 0x0052ff;   // Base blue
   const TINT_CORNER_UNI = 0xff007a;    // Uniswap pink
-  const TINT_CENTER_DEV = 0x6b4a2e;    // warm gold-brown (bumped for visibility)
-  const TINT_HOVER = 0xffb020;         // gold
-  const TINT_FRAME = 0xffb020;         // wall outer frame
+  const TINT_CENTER_DEV = 0x1f1813;    // same as empty — marked by outline frame instead of fill
+  const TINT_HOVER = 0xf5efe6;         // cream (hover ring + fill)
+  const TINT_FRAME = 0xf5efe6;         // wall outer frame (cream)
+  const TINT_RESERVE_FRAME = 0xf5efe6; // cream outline around center reserve
 
   // Zone bounds for 125×80 grid: corners 10×10 at four corners,
   //   center reserve 25×20 at (50,30)-(75,50) — perfectly centered (125/2=62.5±12.5, 80/2=40±10)
@@ -115,10 +117,10 @@
     const frame = new PIXI.Graphics();
     const FRAME_PAD = 6;
     frame.rect(-FRAME_PAD, -FRAME_PAD, TOTAL_W + FRAME_PAD * 2, TOTAL_H + FRAME_PAD * 2);
-    frame.stroke({ color: TINT_FRAME, width: 1.5, alpha: 0.35 });
-    // Subtle inner glow band
+    frame.stroke({ color: TINT_FRAME, width: 1.5, alpha: 0.18 });
+    // Subtle inner band
     frame.rect(-2, -2, TOTAL_W + 4, TOTAL_H + 4);
-    frame.stroke({ color: TINT_FRAME, width: 1, alpha: 0.15 });
+    frame.stroke({ color: TINT_FRAME, width: 1, alpha: 0.08 });
     viewport.addChild(frame);
 
     // ----- Grid container -----
@@ -145,11 +147,24 @@
       }
     }
 
+    // ----- Center reserve outline (cream frame marks the dev reserve, no fill tint) -----
+    const reserveFrame = new PIXI.Graphics();
+    const RX = 50 * BRICK_SIZE - MORTAR / 2;
+    const RY = 30 * BRICK_SIZE - MORTAR / 2;
+    const RW = 25 * BRICK_SIZE + MORTAR;
+    const RH = 20 * BRICK_SIZE + MORTAR;
+    reserveFrame.rect(RX, RY, RW, RH);
+    reserveFrame.stroke({ color: TINT_RESERVE_FRAME, width: 1.8, alpha: 0.45 });
+    // Inner subtle band
+    reserveFrame.rect(RX + 2, RY + 2, RW - 4, RH - 4);
+    reserveFrame.stroke({ color: TINT_RESERVE_FRAME, width: 0.8, alpha: 0.15 });
+    viewport.addChild(reserveFrame);
+
     // ----- Hover overlay (single sprite that moves around) -----
     hoverOverlay = new PIXI.Graphics();
     hoverOverlay.rect(0, 0, BRICK_SIZE - MORTAR, BRICK_SIZE - MORTAR);
-    hoverOverlay.stroke({ color: TINT_HOVER, width: 1.2, alpha: 0.9 });
-    hoverOverlay.fill({ color: TINT_HOVER, alpha: 0.18 });
+    hoverOverlay.stroke({ color: TINT_HOVER, width: 1.3, alpha: 0.95 });
+    hoverOverlay.fill({ color: TINT_HOVER, alpha: 0.14 });
     hoverOverlay.visible = false;
     hoverOverlay.eventMode = 'none';
     viewport.addChild(hoverOverlay);
@@ -215,6 +230,29 @@
     }
     // Prime initial
     updateViewportRect();
+
+    // ----- Ambient shimmer: every ~1.4s a random empty brick briefly brightens (life signal) -----
+    shimmerInterval = setInterval(() => {
+      if (destroyed || !brickSprites.length) return;
+      // Pick random brick; if not an empty zone, skip this round
+      const idx = Math.floor(Math.random() * brickSprites.length);
+      const sprite = brickSprites[idx];
+      if (!sprite) return;
+      const col = idx % GRID_W;
+      const row = Math.floor(idx / GRID_W);
+      const tint = zoneTint(col, row);
+      if (tint !== TINT_EMPTY && tint !== TINT_EMPTY_ALT) return;
+
+      const orig = sprite.tint;
+      // Brighten by ~50% along same hue
+      const r = ((orig >> 16) & 0xff) + 30;
+      const g = ((orig >> 8) & 0xff) + 25;
+      const b = (orig & 0xff) + 22;
+      sprite.tint = ((Math.min(255, r) << 16) | (Math.min(255, g) << 8) | Math.min(255, b)) >>> 0;
+      setTimeout(() => {
+        if (!destroyed && sprite) sprite.tint = orig;
+      }, 700);
+    }, 1400);
 
     // ----- Resize handling -----
     resizeHandler = () => {
@@ -318,6 +356,10 @@
 
   onDestroy(() => {
     destroyed = true;
+    if (shimmerInterval) {
+      clearInterval(shimmerInterval);
+      shimmerInterval = null;
+    }
     if (resizeHandler) {
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
@@ -360,7 +402,7 @@
       {#if hoveredZone}
         <div class="font-mono text-2xs tracking-widest uppercase
                     {hoveredZone === 'public' ? 'text-ink-300' :
-                     hoveredZone === 'center-dev' ? 'text-accent-gold' :
+                     hoveredZone === 'center-dev' ? 'text-accent-cream' :
                      'text-accent-base'}">
           {hoveredZone.replace('-', ' ')}
         </div>
