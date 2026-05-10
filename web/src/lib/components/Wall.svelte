@@ -17,6 +17,7 @@
   let highlightOverlay: any = null;
   let destroyed = false;
   let resizeHandler: (() => void) | null = null;
+  let initialFitScale = 1;
 
   // Pointer position for tooltip (in DOM coords)
   let pointerX = $state(0);
@@ -30,14 +31,15 @@
   const TOTAL_H = GRID * BRICK_SIZE;
 
   // Zone tints (warm dark palette)
-  const TINT_EMPTY = 0x1e1812;
-  const TINT_EMPTY_ALT = 0x231a13;   // slight stagger for organic look
-  const TINT_CORNER_ETH = 0x4a82ff;  // Ethereum-ish blue
-  const TINT_CORNER_X = 0xe0e0e0;    // X white
-  const TINT_CORNER_BASE = 0x0052ff; // Base blue
-  const TINT_CORNER_UNI = 0xff007a;  // Uniswap pink
-  const TINT_CENTER_DEV = 0x4a3624;  // dark warm gold-brown
-  const TINT_HOVER = 0xffb020;       // gold
+  const TINT_EMPTY = 0x1f1813;
+  const TINT_EMPTY_ALT = 0x27201a;     // a bit more contrast for organic checker
+  const TINT_CORNER_ETH = 0x4a82ff;    // Ethereum-ish blue
+  const TINT_CORNER_X = 0xe0e0e0;      // X white
+  const TINT_CORNER_BASE = 0x0052ff;   // Base blue
+  const TINT_CORNER_UNI = 0xff007a;    // Uniswap pink
+  const TINT_CENTER_DEV = 0x6b4a2e;    // warm gold-brown (bumped for visibility)
+  const TINT_HOVER = 0xffb020;         // gold
+  const TINT_FRAME = 0xffb020;         // wall outer frame
 
   function zoneTint(x: number, y: number): number {
     if (x < 10 && y < 10) return TINT_CORNER_ETH;
@@ -94,14 +96,27 @@
       .decelerate({ friction: 0.93 })
       .clampZoom({ minScale: 0.25, maxScale: 12 });
 
-    // Initial framing — fit grid with padding
-    const padding = 80;
+    // Initial framing — fit grid with tighter padding for more presence
+    const padding = 64;
     const fitScale = Math.min(
       (app.screen.width - padding * 2) / TOTAL_W,
       (app.screen.height - padding * 2) / TOTAL_H
     );
     viewport.setZoom(fitScale, true);
     viewport.moveCenter(TOTAL_W / 2, TOTAL_H / 2);
+
+    // Stash for resetView()
+    initialFitScale = fitScale;
+
+    // ----- Outer frame (drawn first, so it sits BEHIND the bricks) -----
+    const frame = new PIXI.Graphics();
+    const FRAME_PAD = 6;
+    frame.rect(-FRAME_PAD, -FRAME_PAD, TOTAL_W + FRAME_PAD * 2, TOTAL_H + FRAME_PAD * 2);
+    frame.stroke({ color: TINT_FRAME, width: 1.5, alpha: 0.35 });
+    // Subtle inner glow band
+    frame.rect(-2, -2, TOTAL_W + 4, TOTAL_H + 4);
+    frame.stroke({ color: TINT_FRAME, width: 1, alpha: 0.15 });
+    viewport.addChild(frame);
 
     // ----- Grid container -----
     gridContainer = new PIXI.Container();
@@ -181,7 +196,22 @@
     // Sync viewport zoom to store
     viewport.on('zoomed', () => {
       wall.zoom = viewport.scale.x;
+      updateViewportRect();
     });
+    viewport.on('moved', updateViewportRect);
+
+    function updateViewportRect() {
+      if (!viewport || destroyed) return;
+      const b = viewport.getVisibleBounds();
+      wall.viewportRect = {
+        x: Math.max(0, b.x),
+        y: Math.max(0, b.y),
+        w: Math.min(b.width, TOTAL_W - Math.max(0, b.x)),
+        h: Math.min(b.height, TOTAL_H - Math.max(0, b.y))
+      };
+    }
+    // Prime initial
+    updateViewportRect();
 
     // ----- Resize handling -----
     resizeHandler = () => {
@@ -206,6 +236,54 @@
         s.visible = s.x < maxX && s.x + s.width > minX && s.y < maxY && s.y + s.height > minY;
       }
     });
+  });
+
+  // React to camera commands from outside (zoom controls, fly-to-mine)
+  $effect(() => {
+    if (!wall.cameraCommand || !viewport || destroyed) return;
+    const { action } = wall.cameraCommand;
+    const cx = viewport.center.x;
+    const cy = viewport.center.y;
+    switch (action) {
+      case 'in':
+        viewport.animate({ scale: Math.min(12, viewport.scale.x * 1.6), time: 250, ease: 'easeOutCubic' });
+        break;
+      case 'out':
+        viewport.animate({ scale: Math.max(initialFitScale, viewport.scale.x / 1.6), time: 250, ease: 'easeOutCubic' });
+        break;
+      case 'reset':
+        viewport.animate({
+          position: { x: TOTAL_W / 2, y: TOTAL_H / 2 },
+          scale: initialFitScale,
+          time: 400,
+          ease: 'easeOutCubic'
+        });
+        break;
+      case 'fit-to-me': {
+        if (wall.wallet.ownedBrickIds.length === 0) return;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const id of wall.wallet.ownedBrickIds) {
+          const idx = id - 1;
+          const bx = (idx % GRID) * BRICK_SIZE;
+          const by = Math.floor(idx / GRID) * BRICK_SIZE;
+          minX = Math.min(minX, bx); minY = Math.min(minY, by);
+          maxX = Math.max(maxX, bx + BRICK_SIZE); maxY = Math.max(maxY, by + BRICK_SIZE);
+        }
+        const centroid = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+        const targetScale = Math.min(
+          app.screen.width / ((maxX - minX) * 2.2),
+          app.screen.height / ((maxY - minY) * 2.2),
+          4
+        );
+        viewport.animate({
+          position: centroid,
+          scale: Math.max(initialFitScale, targetScale),
+          time: 600,
+          ease: 'easeOutCubic'
+        });
+        break;
+      }
+    }
   });
 
   // React to highlight toggle — draw pulsing rings on owned bricks
@@ -262,7 +340,7 @@
 </div>
 
 <!-- Tooltip overlay (DOM-rendered, follows pointer) -->
-{#if wall.hoveredBrick !== null}
+{#if wall.hoveredBrick !== null && !wall.tooltipMuted}
   <div
     class="fixed pointer-events-none z-40 transition-opacity duration-75"
     style="left: {pointerX + 18}px; top: {pointerY + 18}px;"

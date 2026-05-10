@@ -5,6 +5,8 @@
   import Footer from '$lib/components/Footer.svelte';
   import MintFeed from '$lib/components/MintFeed.svelte';
   import Hero from '$lib/components/Hero.svelte';
+  import ZoomControls from '$lib/components/ZoomControls.svelte';
+  import Minimap from '$lib/components/Minimap.svelte';
   import { wall } from '$lib/stores/wall.svelte';
 
   let showHero = $state(true);
@@ -16,6 +18,11 @@
     // Auto-dismiss hero after first interaction or 8s
     const t = setTimeout(() => (showHero = false), 8000);
     return () => clearTimeout(t);
+  });
+
+  // Suppress the brick tooltip whenever an overlay is up
+  $effect(() => {
+    wall.tooltipMuted = showHero || selectedBrick !== null;
   });
 
   function handleBrickClick(id: number) {
@@ -34,6 +41,8 @@
 
   <Header />
   <MintFeed />
+  <ZoomControls />
+  <Minimap />
   <Footer />
 
   {#if showHero}

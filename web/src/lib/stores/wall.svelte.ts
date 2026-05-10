@@ -63,6 +63,16 @@ class WallStore {
   wallPriceUsd = $state(0.000007);
   volume24h = $state(0);
 
+  // Camera command bus — page sends imperative commands to Wall.svelte's viewport
+  // Each command must have a fresh timestamp to re-trigger $effect
+  cameraCommand = $state<{ action: 'in' | 'out' | 'reset' | 'fit-to-me'; ts: number } | null>(null);
+
+  // Tooltip suppression (used when hero/modal is up)
+  tooltipMuted = $state(false);
+
+  // Camera state for minimap
+  viewportRect = $state({ x: 0, y: 0, w: 0, h: 0 });
+
   // Get classification for a brick (pure)
   getZone(x: number, y: number) {
     return classifyZone(x, y);
@@ -82,6 +92,11 @@ class WallStore {
   toggleHighlight() {
     this.highlightOwned = !this.highlightOwned;
   }
+
+  zoomIn() { this.cameraCommand = { action: 'in', ts: Date.now() }; }
+  zoomOut() { this.cameraCommand = { action: 'out', ts: Date.now() }; }
+  resetView() { this.cameraCommand = { action: 'reset', ts: Date.now() }; }
+  flyToMine() { this.cameraCommand = { action: 'fit-to-me', ts: Date.now() }; }
 
   connectWallet(address: string) {
     this.wallet = {
