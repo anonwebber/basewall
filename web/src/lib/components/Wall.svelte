@@ -147,6 +147,46 @@
       }
     }
 
+    // ----- Corner brand image overlays (loaded lazily — fall back to tint if PNG missing) -----
+    const cornerOverlay = new PIXI.Container();
+    cornerOverlay.eventMode = 'none';
+    viewport.addChild(cornerOverlay);
+
+    const CORNER_SPAN = 10 * BRICK_SIZE;
+    const cornerSlots = [
+      { url: '/corners/eth.png',  x: 0,                            y: 0 },
+      { url: '/corners/x.png',    x: (GRID_W - 10) * BRICK_SIZE,   y: 0 },
+      { url: '/corners/base.png', x: 0,                            y: (GRID_H - 10) * BRICK_SIZE },
+      { url: '/corners/uni.png',  x: (GRID_W - 10) * BRICK_SIZE,   y: (GRID_H - 10) * BRICK_SIZE }
+    ];
+
+    Promise.all(
+      cornerSlots.map((c) =>
+        PIXI.Assets.load(c.url)
+          .then((tex: any) => {
+            if (destroyed || !tex) return;
+            const sprite = new PIXI.Sprite(tex);
+            sprite.x = c.x;
+            sprite.y = c.y;
+            sprite.width = CORNER_SPAN;
+            sprite.height = CORNER_SPAN;
+            sprite.eventMode = 'none';
+            sprite.alpha = 0;
+            cornerOverlay.addChild(sprite);
+            // fade-in
+            let t = 0;
+            const fadeIn = () => {
+              t += 0.04;
+              if (destroyed || !sprite || sprite.destroyed) return;
+              sprite.alpha = Math.min(1, t);
+              if (t < 1) requestAnimationFrame(fadeIn);
+            };
+            fadeIn();
+          })
+          .catch(() => {/* PNG not present — solid tint stays */})
+      )
+    );
+
     // ----- Center reserve outline (cream frame marks the dev reserve, no fill tint) -----
     const reserveFrame = new PIXI.Graphics();
     const RX = 50 * BRICK_SIZE - MORTAR / 2;
