@@ -1,19 +1,30 @@
 <script lang="ts">
   import { wall } from '$lib/stores/wall.svelte';
 
-  const WORLD = 100 * 16; // grid 100 × brick 16px (matches Wall.svelte constants)
-  const MAP_SIZE = 116;   // px size of the minimap
+  // 125 wide × 80 tall × 16px per brick (matches Wall.svelte constants)
+  const GRID_W = 125;
+  const GRID_H = 80;
+  const BRICK_PX = 16;
+  const WORLD_W = GRID_W * BRICK_PX; // 2000
+  const WORLD_H = GRID_H * BRICK_PX; // 1280
+
+  // Display dimensions — keep 125:80 ratio at ~160px wide
+  const MAP_W = 160;
+  const MAP_H = Math.round(MAP_W * (GRID_H / GRID_W)); // 102
 
   // Camera viewport rect projected onto the minimap
   const r = $derived({
-    x: (wall.viewportRect.x / WORLD) * MAP_SIZE,
-    y: (wall.viewportRect.y / WORLD) * MAP_SIZE,
-    w: Math.max(2, (wall.viewportRect.w / WORLD) * MAP_SIZE),
-    h: Math.max(2, (wall.viewportRect.h / WORLD) * MAP_SIZE)
+    x: (wall.viewportRect.x / WORLD_W) * MAP_W,
+    y: (wall.viewportRect.y / WORLD_H) * MAP_H,
+    w: Math.max(2, (wall.viewportRect.w / WORLD_W) * MAP_W),
+    h: Math.max(2, (wall.viewportRect.h / WORLD_H) * MAP_H)
   });
 
-  // Show only when zoomed in past initial fit (i.e. viewport rect smaller than world)
-  const show = $derived(wall.viewportRect.w > 0 && wall.viewportRect.w < WORLD * 0.95);
+  // Show only when zoomed in past initial fit
+  const show = $derived(
+    wall.viewportRect.w > 0 &&
+      (wall.viewportRect.w < WORLD_W * 0.95 || wall.viewportRect.h < WORLD_H * 0.95)
+  );
 </script>
 
 {#if show}
@@ -25,18 +36,18 @@
       </div>
       <div
         class="relative border border-ink-600/60 rounded overflow-hidden bg-ink-900"
-        style="width: {MAP_SIZE}px; height: {MAP_SIZE}px;"
+        style="width: {MAP_W}px; height: {MAP_H}px;"
       >
-        <!-- Static minimap art: 4 corners + center reserve as proportional rects -->
-        <svg viewBox="0 0 100 100" class="w-full h-full">
-          <rect x="0" y="0" width="100" height="100" fill="#1f1813" />
-          <!-- corners 10x10 each -->
+        <!-- Schematic: 4 corners + center reserve at correct proportions -->
+        <svg viewBox="0 0 {GRID_W} {GRID_H}" preserveAspectRatio="none" class="w-full h-full">
+          <rect width={GRID_W} height={GRID_H} fill="#1f1813" />
+          <!-- 4 corners 10×10 each -->
           <rect x="0" y="0" width="10" height="10" fill="#4a82ff" />
-          <rect x="90" y="0" width="10" height="10" fill="#e0e0e0" />
-          <rect x="0" y="90" width="10" height="10" fill="#0052ff" />
-          <rect x="90" y="90" width="10" height="10" fill="#ff007a" />
-          <!-- center reserve 20×25 at (40-60, 38-63) -->
-          <rect x="40" y="38" width="20" height="25" fill="#6b4a2e" />
+          <rect x={GRID_W - 10} y="0" width="10" height="10" fill="#e0e0e0" />
+          <rect x="0" y={GRID_H - 10} width="10" height="10" fill="#0052ff" />
+          <rect x={GRID_W - 10} y={GRID_H - 10} width="10" height="10" fill="#ff007a" />
+          <!-- Center reserve 25×20 at (50,30) -->
+          <rect x="50" y="30" width="25" height="20" fill="#6b4a2e" />
         </svg>
 
         <!-- Camera viewport rect indicator -->

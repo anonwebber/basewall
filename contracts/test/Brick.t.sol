@@ -48,11 +48,13 @@ contract BrickTest is Test {
         brick.mintDevReserve();
     }
 
-    function test_DevReserve_MintsAll500() public {
+    function test_DevReserve_MintsAll900() public {
         vm.prank(treasury);
         brick.mintDevReserve();
-        assertEq(brick.balanceOf(treasury), 500);
-        assertEq(brick.ownerOf(9501), treasury);
+        // Placeholder: dev reserve currently mints contiguous IDs 9101-10000 (900 bricks).
+        // Next session patch swaps to non-contiguous (4 corners + center) via isDevReserved().
+        assertEq(brick.balanceOf(treasury), 900);
+        assertEq(brick.ownerOf(9101), treasury);
         assertEq(brick.ownerOf(10000), treasury);
     }
 
@@ -70,20 +72,21 @@ contract BrickTest is Test {
     }
 
     function test_Coordinates() public view {
+        // 125 wide × 80 tall grid
         (uint256 x, uint256 y) = brick.coordinates(1);
         assertEq(x, 0);
         assertEq(y, 0);
 
-        (x, y) = brick.coordinates(100);
-        assertEq(x, 99);
+        (x, y) = brick.coordinates(125);
+        assertEq(x, 124);
         assertEq(y, 0);
 
-        (x, y) = brick.coordinates(101);
+        (x, y) = brick.coordinates(126);
         assertEq(x, 0);
         assertEq(y, 1);
 
         (x, y) = brick.coordinates(10000);
-        assertEq(x, 99);
-        assertEq(y, 99);
+        assertEq(x, 124);
+        assertEq(y, 79);
     }
 }

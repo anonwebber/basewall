@@ -21,12 +21,17 @@ export type WalletState = {
   ownedBrickIds: number[];
 };
 
+// Grid is 125 wide × 80 tall (1.56:1). Corners 10×10 at four corners,
+// center reserve 25×20 centered at (50..75, 30..50).
+export const GRID_W = 125;
+export const GRID_H = 80;
+
 function classifyZone(x: number, y: number): BrickState['zone'] {
   if (x < 10 && y < 10) return 'corner-eth';
-  if (x >= 90 && y < 10) return 'corner-x';
-  if (x < 10 && y >= 90) return 'corner-base';
-  if (x >= 90 && y >= 90) return 'corner-uni';
-  if (x >= 40 && x < 60 && y >= 38 && y < 63) return 'center-dev';
+  if (x >= GRID_W - 10 && y < 10) return 'corner-x';
+  if (x < 10 && y >= GRID_H - 10) return 'corner-base';
+  if (x >= GRID_W - 10 && y >= GRID_H - 10) return 'corner-uni';
+  if (x >= 50 && x < 75 && y >= 30 && y < 50) return 'center-dev';
   return 'public';
 }
 

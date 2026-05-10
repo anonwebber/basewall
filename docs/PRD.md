@@ -9,7 +9,7 @@
 
 ## 1. Concept
 
-10,000-brick onchain billboard on Base. Each brick is an NFT with mutable image/text/link content. A Uniswap v4 hook on the `$WALL` token routes 5% of every swap to dev / brick owners / LP — turning bricks into rent-yielding internet real estate.
+10,000-brick onchain billboard on Base (**125 × 80 grid, 1.56:1 ratio**). Each brick is an NFT with mutable image/text/link content. A Uniswap v4 hook on the `$WALL` token routes 5% of every swap to dev / brick owners / LP — turning bricks into rent-yielding internet real estate.
 
 Million Dollar Homepage + a v4 token economy + Base degen impulse pricing.
 
@@ -22,7 +22,8 @@ Million Dollar Homepage + a v4 token economy + Base degen impulse pricing.
 | Zone | Count | Price | Cap | Mint | Owner |
 |---|---|---|---|---|---|
 | Public ring | 9,500 | 0.001 ETH flat | 100/wallet | FCFS | Buyers |
-| Dev reserve (center 20×25 block, tokenIds 9501–10000) | 500 | — | — | Treasury holds, sold/auctioned later | Us |
+| Dev reserve — 4 corners (10×10 each) | 400 | — | — | Treasury holds, ETH/X/Base/Uniswap homages | Us |
+| Dev reserve — center 25×20 block | 500 | — | — | Treasury holds, sold/auctioned later | Us |
 
 - No lockup on dev bricks
 - 5% royalty on secondary → treasury

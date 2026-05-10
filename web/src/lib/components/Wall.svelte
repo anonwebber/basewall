@@ -23,12 +23,13 @@
   let pointerX = $state(0);
   let pointerY = $state(0);
 
-  // Layout constants
-  const GRID = 100;
+  // Layout constants — 125 wide × 80 tall (1.56:1, exactly 10,000 bricks)
+  const GRID_W = 125;
+  const GRID_H = 80;
   const BRICK_SIZE = 16;     // px in world space
   const MORTAR = 1.6;        // gap between bricks
-  const TOTAL_W = GRID * BRICK_SIZE;
-  const TOTAL_H = GRID * BRICK_SIZE;
+  const TOTAL_W = GRID_W * BRICK_SIZE;
+  const TOTAL_H = GRID_H * BRICK_SIZE;
 
   // Zone tints (warm dark palette)
   const TINT_EMPTY = 0x1f1813;
@@ -41,17 +42,19 @@
   const TINT_HOVER = 0xffb020;         // gold
   const TINT_FRAME = 0xffb020;         // wall outer frame
 
+  // Zone bounds for 125×80 grid: corners 10×10 at four corners,
+  //   center reserve 25×20 at (50,30)-(75,50) — perfectly centered (125/2=62.5±12.5, 80/2=40±10)
   function zoneTint(x: number, y: number): number {
     if (x < 10 && y < 10) return TINT_CORNER_ETH;
-    if (x >= 90 && y < 10) return TINT_CORNER_X;
-    if (x < 10 && y >= 90) return TINT_CORNER_BASE;
-    if (x >= 90 && y >= 90) return TINT_CORNER_UNI;
-    if (x >= 40 && x < 60 && y >= 38 && y < 63) return TINT_CENTER_DEV;
+    if (x >= GRID_W - 10 && y < 10) return TINT_CORNER_X;
+    if (x < 10 && y >= GRID_H - 10) return TINT_CORNER_BASE;
+    if (x >= GRID_W - 10 && y >= GRID_H - 10) return TINT_CORNER_UNI;
+    if (x >= 50 && x < 75 && y >= 30 && y < 50) return TINT_CENTER_DEV;
     return ((x + y) % 2 === 0) ? TINT_EMPTY : TINT_EMPTY_ALT;
   }
 
   function brickId(x: number, y: number): number {
-    return y * GRID + x + 1;
+    return y * GRID_W + x + 1;
   }
 
   onMount(async () => {
@@ -125,10 +128,10 @@
 
     // Render 10,000 sprites, all sharing Texture.WHITE for batching
     const sharedTex = PIXI.Texture.WHITE;
-    brickSprites = new Array(GRID * GRID);
+    brickSprites = new Array(GRID_W * GRID_H);
 
-    for (let y = 0; y < GRID; y++) {
-      for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < GRID_H; y++) {
+      for (let x = 0; x < GRID_W; x++) {
         const sprite = new PIXI.Sprite(sharedTex);
         sprite.x = x * BRICK_SIZE + MORTAR / 2;
         sprite.y = y * BRICK_SIZE + MORTAR / 2;
@@ -137,7 +140,7 @@
         sprite.tint = zoneTint(x, y);
         sprite.cullable = true;
         sprite.eventMode = 'none';
-        brickSprites[y * GRID + x] = sprite;
+        brickSprites[y * GRID_W + x] = sprite;
         gridContainer.addChild(sprite);
       }
     }
@@ -165,7 +168,7 @@
       const col = Math.floor(world.x / BRICK_SIZE);
       const row = Math.floor(world.y / BRICK_SIZE);
 
-      if (col < 0 || col >= GRID || row < 0 || row >= GRID) {
+      if (col < 0 || col >= GRID_W || row < 0 || row >= GRID_H) {
         wall.hoveredBrick = null;
         hoverOverlay.visible = false;
         return;
@@ -188,7 +191,7 @@
       const world = e.world;
       const col = Math.floor(world.x / BRICK_SIZE);
       const row = Math.floor(world.y / BRICK_SIZE);
-      if (col < 0 || col >= GRID || row < 0 || row >= GRID) return;
+      if (col < 0 || col >= GRID_W || row < 0 || row >= GRID_H) return;
       const id = brickId(col, row);
       onBrickClick?.(id);
     });
@@ -264,8 +267,8 @@
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (const id of wall.wallet.ownedBrickIds) {
           const idx = id - 1;
-          const bx = (idx % GRID) * BRICK_SIZE;
-          const by = Math.floor(idx / GRID) * BRICK_SIZE;
+          const bx = (idx % GRID_W) * BRICK_SIZE;
+          const by = Math.floor(idx / GRID_W) * BRICK_SIZE;
           minX = Math.min(minX, bx); minY = Math.min(minY, by);
           maxX = Math.max(maxX, bx + BRICK_SIZE); maxY = Math.max(maxY, by + BRICK_SIZE);
         }
@@ -296,8 +299,8 @@
         if (destroyed) return;
         for (const id of wall.wallet.ownedBrickIds) {
           const idx = id - 1;
-          const col = idx % GRID;
-          const row = Math.floor(idx / GRID);
+          const col = idx % GRID_W;
+          const row = Math.floor(idx / GRID_W);
           const ring = new PIXI.Graphics();
           ring.rect(-MORTAR / 2, -MORTAR / 2, BRICK_SIZE, BRICK_SIZE);
           ring.stroke({ color: TINT_HOVER, width: 2, alpha: 1 });
@@ -329,8 +332,8 @@
   const hoveredZone = $derived.by(() => {
     if (wall.hoveredBrick === null) return null;
     const idx = wall.hoveredBrick - 1;
-    const bx = idx % GRID;
-    const by = Math.floor(idx / GRID);
+    const bx = idx % GRID_W;
+    const by = Math.floor(idx / GRID_W);
     return wall.getZone(bx, by);
   });
 </script>
@@ -351,7 +354,7 @@
           brick #{wall.hoveredBrick}
         </span>
         <span class="font-mono text-2xs text-ink-500">
-          ({(wall.hoveredBrick - 1) % GRID},{Math.floor((wall.hoveredBrick - 1) / GRID)})
+          ({(wall.hoveredBrick - 1) % GRID_W},{Math.floor((wall.hoveredBrick - 1) / GRID_W)})
         </span>
       </div>
       {#if hoveredZone}

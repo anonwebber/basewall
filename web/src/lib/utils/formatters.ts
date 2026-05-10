@@ -37,8 +37,9 @@ export function timeAgo(ts: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-/** Brick coords from id (1-indexed) → "(x,y)" */
+/** Brick coords from id (1-indexed) → "(x,y)" on the 125×80 grid */
+const GRID_W = 125;
 export function brickCoords(id: number): string {
   const idx = id - 1;
-  return `(${idx % 100},${Math.floor(idx / 100)})`;
+  return `(${idx % GRID_W},${Math.floor(idx / GRID_W)})`;
 }
