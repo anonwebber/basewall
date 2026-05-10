@@ -25,6 +25,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.6.0",
     "viem": "^2.21.0"
   }

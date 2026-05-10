@@ -2,13 +2,140 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Inter + JetBrains Mono — self-hosted preferred long-term, CDN for MVP */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --grid-line: rgba(255, 176, 32, 0.04);
+  --noise-opacity: 0.018;
+}
+
 html, body {
   height: 100%;
   margin: 0;
   overscroll-behavior: none;
+  background: #0a0805;
+  color: #f5efe6;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv01', 'cv11';
+}
+
+body {
+  /* Subtle warm gradient + grid + noise */
+  background:
+    radial-gradient(ellipse 1200px 800px at 50% -10%, rgba(0, 82, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 100% 100%, rgba(255, 176, 32, 0.05), transparent 60%),
+    linear-gradient(180deg, #0a0805 0%, #0d0a06 100%);
+}
+
+/* Grid backdrop pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* Film grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' /%3E%3C/svg%3E");
 }
 
 canvas {
   display: block;
   touch-action: none;
+  position: relative;
+  z-index: 1;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 176, 32, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 176, 32, 0.3); }
+
+/* Selection */
+::selection {
+  background: rgba(255, 176, 32, 0.3);
+  color: #f5efe6;
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(180deg, rgba(20, 16, 12, 0.65) 0%, rgba(10, 8, 5, 0.5) 100%);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-strong {
+    background: linear-gradient(180deg, rgba(26, 20, 16, 0.85) 0%, rgba(16, 12, 8, 0.78) 100%);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 font-mono text-sm font-medium tracking-wide
+           bg-accent-gold text-ink-950 rounded-md
+           hover:bg-accent-gold/90 active:scale-[0.98]
+           transition-all duration-150
+           shadow-glow-gold;
+  }
+
+  .btn-ghost {
+    @apply px-3 py-1.5 font-mono text-xs tracking-wide text-ink-200
+           border border-ink-600 hover:border-accent-gold/40
+           hover:text-accent-gold hover:bg-accent-gold/5
+           rounded-md transition-all duration-150;
+  }
+
+  .btn-connect {
+    @apply px-4 py-2 font-mono text-sm font-medium tracking-wide
+           bg-accent-base text-white rounded-md
+           hover:bg-accent-base-glow active:scale-[0.98]
+           transition-all duration-150;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+           bg-ink-800/60 border border-ink-600/50
+           font-mono text-2xs tracking-widest uppercase text-ink-300;
+  }
+
+  .ticker-dot {
+    @apply inline-block w-1.5 h-1.5 rounded-full bg-accent-mint;
+    box-shadow: 0 0 8px theme('colors.accent.mint');
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-shadow-glow {
+    text-shadow: 0 0 12px currentColor;
+  }
+
+  .border-dashed-warm {
+    border-image: repeating-linear-gradient(45deg, rgba(255, 176, 32, 0.2) 0, rgba(255, 176, 32, 0.2) 4px, transparent 4px, transparent 8px) 1;
+  }
 }

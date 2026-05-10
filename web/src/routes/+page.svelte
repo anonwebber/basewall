@@ -1,47 +1,88 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Wall from '$lib/components/Wall.svelte';
+  import Header from '$lib/components/Header.svelte';
+  import Footer from '$lib/components/Footer.svelte';
+  import MintFeed from '$lib/components/MintFeed.svelte';
+  import Hero from '$lib/components/Hero.svelte';
+  import { wall } from '$lib/stores/wall.svelte';
 
-  let mintedCount = $state(0);
-  let connected = $state(false);
-  let highlightOwned = $state(false);
+  let showHero = $state(true);
+  let selectedBrick = $state<number | null>(null);
+
+  onMount(() => {
+    // Start the demo mint feed
+    wall.startDemoFeed();
+    // Auto-dismiss hero after first interaction or 8s
+    const t = setTimeout(() => (showHero = false), 8000);
+    return () => clearTimeout(t);
+  });
+
+  function handleBrickClick(id: number) {
+    selectedBrick = id;
+    showHero = false;
+  }
 </script>
 
 <svelte:head>
   <title>basewall — 10,000 bricks. one wall. forever.</title>
+  <meta name="description" content="The onchain billboard memecoin on Base. Mint a brick for 0.001 ETH, attach anything, earn from every $WALL swap forever." />
 </svelte:head>
 
-<header class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/80 to-transparent">
-  <div class="flex items-center gap-3">
-    <span class="font-mono text-xl font-bold tracking-tight">🧱 basewall</span>
-    <span class="font-mono text-sm text-white/60">{mintedCount} / 9,500 minted</span>
-  </div>
+<main class="fixed inset-0 overflow-hidden">
+  <Wall onBrickClick={handleBrickClick} />
 
-  <div class="flex items-center gap-3">
-    {#if connected}
-      <button
-        class="px-3 py-1.5 text-sm font-mono border border-wall-highlight/50 hover:bg-wall-highlight/10 rounded transition"
-        onclick={() => (highlightOwned = !highlightOwned)}
-      >
-        {highlightOwned ? '🔦 hiding mine' : '🔦 highlight mine'}
-      </button>
-    {/if}
-    <button
-      class="px-4 py-1.5 text-sm font-mono bg-wall-accent hover:bg-wall-accent/90 rounded transition"
-      onclick={() => (connected = !connected)}
-    >
-      {connected ? '0xCAFE…BEEF' : 'connect wallet'}
-    </button>
-    <button class="px-4 py-1.5 text-sm font-mono bg-wall-highlight text-black hover:bg-wall-highlight/90 rounded transition">
-      mint a brick
-    </button>
-  </div>
-</header>
+  <Header />
+  <MintFeed />
+  <Footer />
 
-<main class="w-screen h-screen overflow-hidden">
-  <Wall {highlightOwned} />
+  {#if showHero}
+    <Hero dismiss={() => (showHero = false)} />
+  {/if}
+
+  {#if selectedBrick !== null}
+    <div class="fixed inset-0 z-30 flex items-center justify-center pointer-events-none">
+      <div
+        class="absolute inset-0 bg-ink-950/70 pointer-events-auto animate-fade-up"
+        role="presentation"
+        onclick={() => (selectedBrick = null)}
+        onkeydown={(e) => e.key === 'Escape' && (selectedBrick = null)}
+      ></div>
+      <div class="relative pointer-events-auto glass-strong rounded-2xl p-6 w-full max-w-md shadow-panel animate-fade-up">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="font-mono text-2xs tracking-widest uppercase text-ink-400 mb-1">brick</div>
+            <h2 class="font-display text-3xl font-bold text-ink-50">#{selectedBrick}</h2>
+          </div>
+          <button
+            onclick={() => (selectedBrick = null)}
+            class="font-mono text-2xs text-ink-400 hover:text-accent-gold transition"
+            aria-label="close"
+          >
+            ✕ esc
+          </button>
+        </div>
+
+        <div class="aspect-square w-full bg-ink-900 rounded-lg border border-ink-700 mb-4
+                    flex items-center justify-center">
+          <span class="font-mono text-sm text-ink-500">unminted</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4 font-mono text-xs">
+          <div class="px-3 py-2 bg-ink-900/60 rounded-md">
+            <div class="text-2xs text-ink-500 uppercase tracking-wider mb-0.5">position</div>
+            <div class="text-ink-100">
+              ({(selectedBrick - 1) % 100},{Math.floor((selectedBrick - 1) / 100)})
+            </div>
+          </div>
+          <div class="px-3 py-2 bg-ink-900/60 rounded-md">
+            <div class="text-2xs text-ink-500 uppercase tracking-wider mb-0.5">price</div>
+            <div class="text-accent-gold">0.001 ETH</div>
+          </div>
+        </div>
+
+        <button class="btn-primary w-full py-3">claim this brick →</button>
+      </div>
+    </div>
+  {/if}
 </main>
-
-<footer class="absolute bottom-0 left-0 right-0 z-10 px-6 py-3 flex justify-between items-center font-mono text-xs text-white/40 bg-gradient-to-t from-black/60 to-transparent">
-  <span>0.001 ETH per brick · max 100/wallet · base mainnet</span>
-  <span>scroll to zoom · drag to pan</span>
-</footer>
