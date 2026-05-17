@@ -199,6 +199,10 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
     }
 
     /// @notice One-time mint of all 400 corner-reserved bricks to the treasury.
+    /// @dev Uses `_mint` (not `_safeMint`): recipient is the treasury we set in the
+    ///      constructor and trust by construction. Saves ~240k gas across 400 mints
+    ///      and avoids the ERC721 receiver-check edge case when deploying via certain
+    ///      script contexts. Caller-facing mint paths still use `_safeMint`.
     function mintCornerReserves() external onlyOwner {
         if (cornerReserveMinted) revert CornerAlreadyMinted();
         cornerReserveMinted = true;
@@ -207,10 +211,10 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
         for (uint256 cy = 0; cy < 10; cy++) {
             for (uint256 cx = 0; cx < 10; cx++) {
                 // 4 corners
-                _safeMint(treasury, cy * GRID_W + cx + 1);                                     // ETH (top-left)
-                _safeMint(treasury, cy * GRID_W + (GRID_W - 10 + cx) + 1);                     // X (top-right)
-                _safeMint(treasury, (GRID_H - 10 + cy) * GRID_W + cx + 1);                     // BASE (bot-left)
-                _safeMint(treasury, (GRID_H - 10 + cy) * GRID_W + (GRID_W - 10 + cx) + 1);     // UNI (bot-right)
+                _mint(treasury, cy * GRID_W + cx + 1);                                     // ETH (top-left)
+                _mint(treasury, cy * GRID_W + (GRID_W - 10 + cx) + 1);                     // X (top-right)
+                _mint(treasury, (GRID_H - 10 + cy) * GRID_W + cx + 1);                     // BASE (bot-left)
+                _mint(treasury, (GRID_H - 10 + cy) * GRID_W + (GRID_W - 10 + cx) + 1);     // UNI (bot-right)
             }
         }
         emit CornerReserveMinted();
