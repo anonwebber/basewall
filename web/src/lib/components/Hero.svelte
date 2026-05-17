@@ -38,9 +38,9 @@
 
     <!-- Sub -->
     <p class="font-sans text-lg sm:text-xl text-ink-200 max-w-xl mx-auto mb-10 leading-relaxed">
-      Mint a brick for <span class="text-accent-cream font-semibold">{eth(0.001)}</span>.
+      Mint a brick for <span class="text-accent-cream font-semibold">{eth(0.0005)}</span>.
       Attach any image, text, or link.
-      Earn from every <span class="font-mono text-ink-50">$WALL</span> swap — forever.
+      Rent it out as ad space — keep <span class="text-accent-cream">90%</span> of the income.
     </p>
 
     <!-- CTAs -->

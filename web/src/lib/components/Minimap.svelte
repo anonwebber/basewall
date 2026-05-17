@@ -38,7 +38,7 @@
         class="relative border border-ink-600/60 rounded overflow-hidden bg-ink-900"
         style="width: {MAP_W}px; height: {MAP_H}px;"
       >
-        <!-- Schematic: 4 corners + center reserve at correct proportions -->
+        <!-- Schematic: 4 corners at correct proportions -->
         <svg viewBox="0 0 {GRID_W} {GRID_H}" preserveAspectRatio="none" class="w-full h-full">
           <rect width={GRID_W} height={GRID_H} fill="#1f1813" />
           <!-- 4 corners 10×10 each -->
@@ -46,8 +46,6 @@
           <rect x={GRID_W - 10} y="0" width="10" height="10" fill="#e0e0e0" />
           <rect x="0" y={GRID_H - 10} width="10" height="10" fill="#0052ff" />
           <rect x={GRID_W - 10} y={GRID_H - 10} width="10" height="10" fill="#ff007a" />
-          <!-- Center reserve 25×20 at (50,30) — outline only, no fill, matches Wall.svelte -->
-          <rect x="50" y="30" width="25" height="20" fill="none" stroke="#f5efe6" stroke-width="0.4" stroke-opacity="0.5" />
         </svg>
 
         <!-- Camera viewport rect indicator -->

@@ -39,19 +39,15 @@
   const TINT_CORNER_X = 0xe0e0e0;      // X white
   const TINT_CORNER_BASE = 0x0052ff;   // Base blue
   const TINT_CORNER_UNI = 0xff007a;    // Uniswap pink
-  const TINT_CENTER_DEV = 0x1f1813;    // same as empty — marked by outline frame instead of fill
   const TINT_HOVER = 0xf5efe6;         // cream (hover ring + fill)
   const TINT_FRAME = 0xf5efe6;         // wall outer frame (cream)
-  const TINT_RESERVE_FRAME = 0xf5efe6; // cream outline around center reserve
 
-  // Zone bounds for 125×80 grid: corners 10×10 at four corners,
-  //   center reserve 25×20 at (50,30)-(75,50) — perfectly centered (125/2=62.5±12.5, 80/2=40±10)
+  // Zone bounds for 125×80 grid: corners 10×10 at four corners. No center reserve.
   function zoneTint(x: number, y: number): number {
     if (x < 10 && y < 10) return TINT_CORNER_ETH;
     if (x >= GRID_W - 10 && y < 10) return TINT_CORNER_X;
     if (x < 10 && y >= GRID_H - 10) return TINT_CORNER_BASE;
     if (x >= GRID_W - 10 && y >= GRID_H - 10) return TINT_CORNER_UNI;
-    if (x >= 50 && x < 75 && y >= 30 && y < 50) return TINT_CENTER_DEV;
     return ((x + y) % 2 === 0) ? TINT_EMPTY : TINT_EMPTY_ALT;
   }
 
@@ -230,19 +226,6 @@
 
     // Fire all 4 in parallel — each falls back to its existing tint if file missing
     Promise.all(cornerSlots.map((c) => applyImageToCluster(c.url, c.cornerX, c.cornerY)));
-
-    // ----- Center reserve outline (cream frame marks the dev reserve, no fill tint) -----
-    const reserveFrame = new PIXI.Graphics();
-    const RX = 50 * BRICK_SIZE - MORTAR / 2;
-    const RY = 30 * BRICK_SIZE - MORTAR / 2;
-    const RW = 25 * BRICK_SIZE + MORTAR;
-    const RH = 20 * BRICK_SIZE + MORTAR;
-    reserveFrame.rect(RX, RY, RW, RH);
-    reserveFrame.stroke({ color: TINT_RESERVE_FRAME, width: 1.8, alpha: 0.45 });
-    // Inner subtle band
-    reserveFrame.rect(RX + 2, RY + 2, RW - 4, RH - 4);
-    reserveFrame.stroke({ color: TINT_RESERVE_FRAME, width: 0.8, alpha: 0.15 });
-    viewport.addChild(reserveFrame);
 
     // ----- Hover overlay (single sprite that moves around) -----
     hoverOverlay = new PIXI.Graphics();
@@ -485,14 +468,12 @@
       </div>
       {#if hoveredZone}
         <div class="font-mono text-2xs tracking-widest uppercase
-                    {hoveredZone === 'public' ? 'text-ink-300' :
-                     hoveredZone === 'center-dev' ? 'text-accent-cream' :
-                     'text-accent-base'}">
+                    {hoveredZone === 'public' ? 'text-ink-300' : 'text-accent-base'}">
           {hoveredZone.replace('-', ' ')}
         </div>
       {/if}
       <div class="mt-1.5 pt-1.5 border-t border-ink-700/60 font-mono text-2xs text-ink-400">
-        click to view · 0.001 ETH to mint
+        click to view · 0.0005 ETH to mint
       </div>
     </div>
   </div>

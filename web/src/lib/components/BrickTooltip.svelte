@@ -16,7 +16,6 @@
       case 'corner-x': return { label: 'X CORNER', tone: 'text-ink-50' };
       case 'corner-base': return { label: 'BASE CORNER', tone: 'text-accent-base' };
       case 'corner-uni': return { label: 'UNISWAP CORNER', tone: 'text-accent-cream' };
-      case 'center-dev': return { label: 'PREMIUM RESERVE', tone: 'text-accent-cream' };
       default: return { label: 'PUBLIC', tone: 'text-ink-300' };
     }
   }
@@ -46,7 +45,7 @@
       {/if}
 
       <div class="mt-1.5 pt-1.5 border-t border-ink-700/60 font-mono text-2xs text-ink-400">
-        unminted · 0.001 ETH
+        unminted · 0.0005 ETH
       </div>
     </div>
   </div>

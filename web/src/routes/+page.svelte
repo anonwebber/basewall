@@ -33,7 +33,7 @@
 
 <svelte:head>
   <title>basewall — 10,000 bricks. one wall. forever.</title>
-  <meta name="description" content="The onchain billboard memecoin on Base. Mint a brick for 0.001 ETH, attach anything, earn from every $WALL swap forever." />
+  <meta name="description" content="The onchain billboard on Base. Mint a brick for 0.0005 ETH, attach anything, rent it out as ad space and keep 90% of the income." />
 </svelte:head>
 
 <main class="fixed inset-0 overflow-hidden">
@@ -86,7 +86,7 @@
           </div>
           <div class="px-3 py-2 bg-ink-900/60 rounded-md">
             <div class="text-2xs text-ink-500 uppercase tracking-wider mb-0.5">price</div>
-            <div class="text-accent-cream">0.001 ETH</div>
+            <div class="text-accent-cream">0.0005 ETH</div>
           </div>
         </div>
 

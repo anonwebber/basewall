@@ -6,11 +6,11 @@
 
 export type BrickState = {
   id: number;            // 1..10000
-  x: number;             // 0..99
-  y: number;             // 0..99
+  x: number;             // 0..124
+  y: number;             // 0..79
   ownerAddress: string | null;
   contentURI: string | null;
-  zone: 'public' | 'corner-eth' | 'corner-x' | 'corner-base' | 'corner-uni' | 'center-dev';
+  zone: 'public' | 'corner-eth' | 'corner-x' | 'corner-base' | 'corner-uni';
   mintedAt: number | null;
 };
 
@@ -21,8 +21,7 @@ export type WalletState = {
   ownedBrickIds: number[];
 };
 
-// Grid is 125 wide × 80 tall (1.56:1). Corners 10×10 at four corners,
-// center reserve 25×20 centered at (50..75, 30..50).
+// Grid is 125 wide × 80 tall (1.56:1). Only reserve: 4 corners (10×10 each).
 export const GRID_W = 125;
 export const GRID_H = 80;
 
@@ -31,15 +30,16 @@ function classifyZone(x: number, y: number): BrickState['zone'] {
   if (x >= GRID_W - 10 && y < 10) return 'corner-x';
   if (x < 10 && y >= GRID_H - 10) return 'corner-base';
   if (x >= GRID_W - 10 && y >= GRID_H - 10) return 'corner-uni';
-  if (x >= 50 && x < 75 && y >= 30 && y < 50) return 'center-dev';
   return 'public';
 }
 
 class WallStore {
   // Stats
   publicMinted = $state(0);
+  freeMinted = $state(0);
   totalSupply = 10000;
-  publicSupply = 9100;
+  publicSupply = 9600;
+  freePhaseSupply = 1000;
   bannerClustersMinted = $state(0);
 
   // Viewport (controlled by Wall.svelte)
@@ -64,10 +64,6 @@ class WallStore {
   // Live mint feed (recent N)
   mintFeed = $state<Array<{ id: number; minter: string; timestamp: number }>>([]);
 
-  // Token price stub
-  wallPriceUsd = $state(0.000007);
-  volume24h = $state(0);
-
   // Camera command bus — page sends imperative commands to Wall.svelte's viewport
   // Each command must have a fresh timestamp to re-trigger $effect
   cameraCommand = $state<{ action: 'in' | 'out' | 'reset' | 'fit-to-me'; ts: number } | null>(null);
@@ -87,7 +83,7 @@ class WallStore {
   startDemoFeed() {
     if (typeof window === 'undefined') return;
     setInterval(() => {
-      const id = Math.floor(Math.random() * 9100) + 1;
+      const id = Math.floor(Math.random() * 9600) + 1;
       const minter = '0x' + Math.random().toString(16).slice(2, 6) + '…' + Math.random().toString(16).slice(2, 6);
       this.mintFeed = [{ id, minter, timestamp: Date.now() }, ...this.mintFeed.slice(0, 9)];
       this.publicMinted = Math.min(this.publicSupply, this.publicMinted + 1);

@@ -5,7 +5,6 @@
     w: number;
     h: number;
     cornerSize: { w: number; h: number };
-    centerSize: { w: number; h: number };
     bannerExample: { x: number; y: number };
     notes: string;
     vibe: string;
@@ -22,10 +21,9 @@
       w: 200,
       h: 50,
       cornerSize: { w: 10, h: 10 },
-      centerSize: { w: 50, h: 10 }, // 500 bricks
       bannerExample: { x: 60, y: 20 },
       vibe: 'highway billboard · bold horizontal',
-      notes: 'Exactly 10,000 · banner is 15%w × 20%h of wall'
+      notes: 'Exactly 10,000 · 400 corners reserved · 9,600 public'
     },
     {
       name: '175 × 57',
@@ -33,10 +31,9 @@
       w: 175,
       h: 57,
       cornerSize: { w: 10, h: 10 },
-      centerSize: { w: 25, h: 20 }, // ~500 bricks
       bannerExample: { x: 50, y: 24 },
       vibe: 'X banner ratio · twin-shape with banners',
-      notes: '9,975 bricks · same shape as the X banner clusters themselves'
+      notes: '9,975 bricks · same shape as X-banner clusters'
     },
     {
       name: '150 × 66',
@@ -44,7 +41,6 @@
       w: 150,
       h: 66,
       cornerSize: { w: 10, h: 10 },
-      centerSize: { w: 25, h: 20 }, // 500 bricks
       bannerExample: { x: 40, y: 28 },
       vibe: 'subtle rectangle · classroom wall',
       notes: '9,900 bricks · less extreme, still rectangular'
@@ -55,10 +51,9 @@
       w: 125,
       h: 80,
       cornerSize: { w: 10, h: 10 },
-      centerSize: { w: 20, h: 25 }, // 500 bricks
       bannerExample: { x: 35, y: 35 },
-      vibe: 'screen-shaped · cinema',
-      notes: 'Exactly 10,000 · close to 16:10 monitor'
+      vibe: 'screen-shaped · cinema · LOCKED',
+      notes: 'Exactly 10,000 · 400 corners reserved · 9,600 public'
     }
   ];
 
@@ -73,7 +68,7 @@
     return l.w * l.h;
   }
   function publicCount(l: Layout) {
-    return brickCount(l) - 4 * l.cornerSize.w * l.cornerSize.h - l.centerSize.w * l.centerSize.h;
+    return brickCount(l) - 4 * l.cornerSize.w * l.cornerSize.h;
   }
 </script>
 
@@ -88,8 +83,8 @@
     <header class="mt-6 mb-12">
       <h1 class="font-display text-5xl font-bold text-ink-50 mb-3">layout preview</h1>
       <p class="text-ink-300 max-w-2xl text-lg">
-        Four candidate wall ratios. Each schematic shows: 4 corner reserves (tinted), center dev reserve (cream outline),
-        and one example X-banner cluster (cream outline) to scale.
+        Four candidate wall ratios. Each schematic shows: 4 corner reserves (tinted),
+        and one example X-banner cluster (cream outline) to scale. <strong class="text-accent-cream">125×80 is locked</strong>.
       </p>
     </header>
 
@@ -107,7 +102,7 @@
             </div>
             <div class="font-mono text-xs text-right">
               <div class="text-ink-100">{brickCount(l).toLocaleString()} total</div>
-              <div class="text-ink-400">{publicCount(l).toLocaleString()} public · 400 corners · {l.centerSize.w}×{l.centerSize.h} center</div>
+              <div class="text-ink-400">{publicCount(l).toLocaleString()} public · 400 corners</div>
             </div>
           </div>
 
@@ -134,18 +129,6 @@
               <rect x={l.w - l.cornerSize.w} y="0" width={l.cornerSize.w} height={l.cornerSize.h} fill="#e0e0e0" opacity="0.85" />
               <rect x="0" y={l.h - l.cornerSize.h} width={l.cornerSize.w} height={l.cornerSize.h} fill="#0052ff" opacity="0.85" />
               <rect x={l.w - l.cornerSize.w} y={l.h - l.cornerSize.h} width={l.cornerSize.w} height={l.cornerSize.h} fill="#ff007a" opacity="0.85" />
-
-              <!-- Center dev reserve -->
-              <rect
-                x={(l.w - l.centerSize.w) / 2}
-                y={(l.h - l.centerSize.h) / 2}
-                width={l.centerSize.w}
-                height={l.centerSize.h}
-                fill="none"
-                stroke="#f5efe6"
-                stroke-width="0.5"
-                stroke-opacity="0.6"
-              />
 
               <!-- Example X-banner cluster (30×10) -->
               <rect
@@ -191,11 +174,8 @@
         <li><strong class="text-ink-50">200×50 (4:1)</strong> — boldest billboard. The "I built a wall" energy. Wall is short and wide; tons of vertical screen space for hero/header/footer.</li>
         <li><strong class="text-ink-50">175×57 (3:1)</strong> — exact X-banner ratio. The whole wall IS a giant X banner. Banner clusters tile naturally.</li>
         <li><strong class="text-ink-50">150×66 (2.27:1)</strong> — middle ground. Rectangular but not extreme. Easier to render mobile-friendly.</li>
-        <li><strong class="text-ink-50">125×80 (1.56:1)</strong> — barely rectangular. Closer to a window/monitor. Bricks stay roughly square in visual presence.</li>
+        <li><strong class="text-ink-50">125×80 (1.56:1)</strong> — barely rectangular. Closer to a window/monitor. Bricks stay roughly square in visual presence. <span class="text-accent-cream">LOCKED.</span></li>
       </ul>
-      <p class="mt-4 font-mono text-2xs text-ink-400">
-        tell me which option to lock in and i'll refactor brick.sol + wall.svelte + minimap to match.
-      </p>
     </div>
   </div>
 </main>
