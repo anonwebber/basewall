@@ -246,6 +246,63 @@ contract BrickTest is Test {
         assertEq(brick.websiteURL(), "https://basewall.fun");
     }
 
+    // ───────────── Treasury withdraw isolation (regression for rental escrow bug) ─────────────
+
+    function test_Withdraw_OnlyPullsMintRevenue_NotRentalEscrow() public {
+        _fillFreePhase();
+
+        // Alice + Bob each mint a paid brick → 2 × 0.0005 = 0.001 ETH of mint revenue
+        vm.prank(alice, alice);
+        brick.mint{value: PRICE}(1);
+        vm.prank(bob, bob);
+        brick.mint{value: PRICE}(1);
+
+        assertEq(brick.mintRevenue(), 2 * PRICE);
+        uint256 contractBalBeforeRent = address(brick).balance;
+
+        // Alice lists her brick, advertiser rents 2 months @ 0.05 ETH/mo = 0.1 ETH
+        uint256 aliceId = _firstOwnedId(alice);
+        vm.prank(alice);
+        brick.listForRent(aliceId, 0.05 ether, 2);
+        vm.prank(advertiser);
+        brick.rent{value: 0.1 ether}(aliceId, 2, "ipfs://ad");
+
+        // Of 0.1 ETH rent: 0.01 → treasury escrow, 0.09 → alice escrow
+        assertEq(brick.pendingRentalEarnings(treasury), 0.01 ether);
+        assertEq(brick.pendingRentalEarnings(alice), 0.09 ether);
+        assertEq(address(brick).balance, contractBalBeforeRent + 0.1 ether);
+
+        // Treasury can ONLY withdraw the 0.001 ETH mint revenue. Rental escrow stays locked.
+        uint256 treasuryBefore = treasury.balance;
+        vm.prank(treasury);
+        brick.withdraw(payable(treasury));
+        assertEq(treasury.balance - treasuryBefore, 2 * PRICE, "withdraw pulled wrong amount");
+        assertEq(brick.mintRevenue(), 0, "mintRevenue not reset");
+        // Contract still holds the entire 0.1 ETH of rental escrow
+        assertEq(address(brick).balance, 0.1 ether, "rental escrow leaked");
+
+        // Alice claims her 0.09 ETH share via the rental-earnings path
+        uint256 aliceBefore = alice.balance;
+        vm.prank(alice);
+        brick.withdrawRentalEarnings();
+        assertEq(alice.balance - aliceBefore, 0.09 ether);
+
+        // Treasury claims its 0.01 ETH rental cut via the SAME path (not withdraw())
+        uint256 treasuryBefore2 = treasury.balance;
+        vm.prank(treasury);
+        brick.withdrawRentalEarnings();
+        assertEq(treasury.balance - treasuryBefore2, 0.01 ether);
+
+        // Contract drained, no stuck funds
+        assertEq(address(brick).balance, 0);
+    }
+
+    function test_Withdraw_RevertsWhenNoRevenue() public {
+        vm.prank(treasury);
+        vm.expectRevert(Brick.InsufficientETH.selector);
+        brick.withdraw(payable(treasury));
+    }
+
     // ───────────── Royalty ─────────────
 
     function test_Royalty_5PercentToTreasury() public {

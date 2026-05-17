@@ -52,6 +52,11 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
     bool public cornerReserveMinted;
     mapping(address => bool) public claimedFree;
     mapping(address => uint256) public paidMintedBy;
+    /// @notice ETH paid into the contract via paid-mint paths (mint + mintBannerCluster).
+    ///         The ONLY pool that treasury `withdraw()` can drain. Rental income is
+    ///         escrowed separately in `pendingRentalEarnings` and exits via
+    ///         `withdrawRentalEarnings()`, including the treasury's 10% cut.
+    uint256 public mintRevenue;
 
     // ─────────── Content ───────────
     mapping(uint256 => string) public contentURI;                // owner's default content
@@ -158,7 +163,10 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
         if (publicMintCount + quantity > PUBLIC_SUPPLY) revert PublicSoldOut();
 
         paidMintedBy[msg.sender] += quantity;
-        unchecked { publicMintCount += quantity; }
+        unchecked {
+            publicMintCount += quantity;
+            mintRevenue += mintPrice * quantity;
+        }
 
         for (uint256 i = 0; i < quantity; i++) {
             uint256 id = _drawAndRemove();
@@ -187,7 +195,10 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
         }
 
         paidMintedBy[msg.sender] += BANNER_CLUSTER_SIZE;
-        unchecked { publicMintCount += BANNER_CLUSTER_SIZE; }
+        unchecked {
+            publicMintCount += BANNER_CLUSTER_SIZE;
+            mintRevenue += mintPrice * BANNER_CLUSTER_SIZE;
+        }
 
         for (uint256 dy = 0; dy < BANNER_CLUSTER_H; dy++) {
             for (uint256 dx = 0; dx < BANNER_CLUSTER_W; dx++) {
@@ -373,22 +384,15 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
     //                  Treasury
     // ═════════════════════════════════════════════════════════
 
-    function withdraw(address payable to) external onlyOwner {
-        uint256 amt = address(this).balance - _totalPendingEarnings();
+    /// @notice Treasury pulls accrued mint revenue. Cannot touch rental escrow —
+    ///         the treasury's 10% rental cut is claimed via `withdrawRentalEarnings()`
+    ///         just like every other brick owner, keeping the two pools cleanly separated.
+    function withdraw(address payable to) external onlyOwner nonReentrant {
+        uint256 amt = mintRevenue;
+        if (amt == 0) revert InsufficientETH();
+        mintRevenue = 0;
         (bool ok,) = to.call{value: amt}("");
         if (!ok) revert TransferFailed();
-    }
-
-    // Convenience: how much of contract balance is reserved for pull-payment claims.
-    // (Sum tracked off-chain in practice; here we just guard against draining rent escrow.)
-    // We keep a simple invariant by withdrawing only what mint revenue accounts for.
-    function _totalPendingEarnings() internal view returns (uint256) {
-        // Mint revenue can always be withdrawn. Pending rental balances are paid in via rent()
-        // and exit via withdrawRentalEarnings(). We don't sum them on-chain (would need an index).
-        // Conservative bound: treasury can only pull what's NOT in pendingRentalEarnings[owner()].
-        // The owner's own rental share is claimable via withdrawRentalEarnings(); withdraw() drains
-        // the rest. To keep this safe, we just subtract the owner's pending rental share.
-        return pendingRentalEarnings[owner()];
     }
 
     // ═════════════════════════════════════════════════════════
@@ -475,6 +479,4 @@ contract Brick is ERC721, ERC2981, Ownable, ReentrancyGuard {
         if (who.balance < FREE_MIN_BALANCE) return false;
         return true;
     }
-
-    receive() external payable {}
 }
